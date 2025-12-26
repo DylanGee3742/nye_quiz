@@ -3,7 +3,7 @@ import { socket } from "../socket"
 
 export const Game = () => {
     const [name, setName] = useState("")
-    const [gameId, setGameId] = useState(1)
+    const [gameId, setGameId] = useState("nye")
     const [submitted, setSubmitted] = useState(false)
 
     const joinGame = (e) => {

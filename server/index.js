@@ -18,6 +18,10 @@ const games = new Map() // key: gameId, value: { players, currentQuestion, answe
 io.on("connection", (socket) => {
   console.log("Connected:", socket.id)
 
+  socket.on("host:join", ({ gameId }) => {
+    socket.join(gameId)
+  })
+
   // Player joins a game
   socket.on("player:join", ({ name, gameId }) => {
     if (!games.has(gameId)) {
@@ -27,7 +31,6 @@ io.on("connection", (socket) => {
     game.players.push({ id: socket.id, name })
     socket.join(gameId)
 
-    console.log(game)
     // Notify host and all players
     io.to(gameId).emit("player:joined", game.players)
   })
