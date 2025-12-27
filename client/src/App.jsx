@@ -1,5 +1,5 @@
 import { useState } from "react"
-import {Quiz} from "./pages/Quiz.jsx"
+import {Quiz} from "./pages/Quiz"
 import {Game} from "./pages/Game"
 
 export default function App() {

@@ -35,12 +35,13 @@ io.on("connection", (socket) => {
     io.to(gameId).emit("player:joined", game.players)
   })
 
-//   // Host starts quiz
-//   socket.on("quiz:start", ({ gameId }) => {
-//     const game = games.get(gameId)
-//     if (!game) return
-//     sendQuestion(gameId)
-//   })
+  // Host starts quiz
+  socket.on("quiz:start", ({ gameId }) => {
+    const game = games.get(gameId)
+    console.log(game)
+    if (!game) return
+    sendQuestion(gameId)
+  })
 
 //   // Phone submits answer
 //   socket.on("player:answer", ({ gameId, answerIndex }) => {
@@ -71,15 +72,15 @@ io.on("connection", (socket) => {
 })
 
 // Helper to send question
-// function sendQuestion(gameId) {
-//   const game = games.get(gameId)
-//   const question = questions[game.currentQuestion]
-//   io.to(gameId).emit("quiz:question", {
-//     question: question.question,
-//     options: question.options,
-//     index: game.currentQuestion
-//   })
-// }
+function sendQuestion(gameId) {
+  const game = games.get(gameId)
+  const question = questions[game.currentQuestion]
+  io.to(gameId).emit("quiz:question", {
+    question: question.question,
+    options: question.options,
+    index: game.currentQuestion
+  })
+}
 
 httpServer.listen(3000, () => {
   console.log("Server running on http://localhost:3000")

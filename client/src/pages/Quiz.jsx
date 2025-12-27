@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react"
 import { socket } from "../socket"
+import { Form, Button, Card } from 'react-bootstrap'
 
 export const Quiz = () => {
   const [players, setPlayers] = useState([])
   const [gameStarted, setGameStarted] = useState(false)
   const gameId = "nye"
+  const [question, setQuestion] = useState(null)
+  const [selectedAnswer, setSelectedAnswer] = useState(null)
 
   useEffect(() => {
     // Join room as host
@@ -25,6 +28,22 @@ export const Quiz = () => {
     socket.emit("quiz:start", { gameId })
   }
 
+  const fetchQuestion = async () => {
+    try {
+      socket.on("quiz:question", (question) => {
+        console.log('question', question)
+        setQuestion(question)
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  useEffect(() => {
+    fetchQuestion()
+  }, [gameStarted])
+
+
   return (
     <div
       style={{
@@ -39,10 +58,10 @@ export const Quiz = () => {
       }}
     >
       <h1 style={{ fontSize: "3rem", marginBottom: "20px" }}>🎉 NYE Quiz 🎉</h1>
-      <h2 style={{ marginBottom: "20px" }}>Players Joined:</h2>
+      {!gameStarted && <h2 style={{ marginBottom: "20px" }}>Players Joined:</h2>}
 
       <div style={{ display: "flex", gap: "15px", flexWrap: "wrap", justifyContent: "center" }}>
-        {players.length > 0 ? (
+        {players.length > 0 && !gameStarted && (
           players.map((player) => (
             <div
               key={player.id}
@@ -59,29 +78,46 @@ export const Quiz = () => {
               {player.name}
             </div>
           ))
-        ) : (
-          <p style={{ fontSize: "1.2rem", color: "#555" }}>No players yet...</p>
         )}
       </div>
 
-      {!gameStarted && (
-        <button
+      {!gameStarted ? (
+        <Button
+          variant="secondary"
           onClick={startQuiz}
-          style={{
-            marginTop: "40px",
-            padding: "15px 30px",
-            fontSize: "1.5rem",
-            borderRadius: "10px",
-            border: "none",
-            background: "#ff6347",
-            color: "#fff",
-            cursor: "pointer",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)"
-          }}
         >
           Start Quiz
-        </button>
-      )}
+        </Button>
+      ) :
+        <div className="d-flex justify-content-center mt-5">
+          {question && (
+            <Card style={{ maxWidth: "600px", width: "100%" }} className="p-4 shadow">
+              <Card.Body>
+                <Card.Title className="mb-4 text-center">
+                  {question.question}
+                </Card.Title>
+
+                <Form>
+                  {question.options.map((option, i) => (
+                    <Form.Check
+                      key={i}
+                      type="radio"
+                      name="question"
+                      id={`option-${i}`}
+                      label={option}
+                      className="mb-3 p-3 border rounded"
+                      checked={selectedAnswer === option}
+                      onChange={() => setSelectedAnswer(option)}
+                    />
+                  ))}
+                </Form>
+              </Card.Body>
+            </Card>
+          )}
+        </div>
+
+      }
     </div>
+
   )
 }
