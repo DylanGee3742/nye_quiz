@@ -9,12 +9,12 @@ export const Game = () => {
     const [submitted, setSubmitted] = useState(false)
     const [gameStarted, setGameStarted] = useState(false)
     const [question, setQuestion] = useState(null)
-    const [selectedAnswer, setSelectedAnswer] = useState(null)
+    const [answerIndex, setAnswerIndex] = useState(null)
+    const [answerSubmitted, setAnswerSubmitted] = useState(false)
 
     const fetchQuestion = async () => {
         try {
             socket.on("quiz:question", (question) => {
-                console.log('question', question)
                 setQuestion(question)
             })
         } catch (e) {
@@ -44,6 +44,16 @@ export const Game = () => {
         }
     }
 
+    const submitAnswer = (e) => {
+        try {
+            e.preventDefault()
+            socket.emit("player:answer", { gameId, answerIndex })
+            setAnswerSubmitted(true)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     return (
         <>
             {!submitted ? (
@@ -68,7 +78,7 @@ export const Game = () => {
                                                 {question.question}
                                             </Card.Title>
 
-                                            <Form>
+                                            <Form onSubmit={submitAnswer}>
                                                 {question.options.map((option, i) => (
                                                     <Form.Check
                                                         key={i}
@@ -77,10 +87,12 @@ export const Game = () => {
                                                         id={`option-${i}`}
                                                         label={option}
                                                         className="mb-3 p-3 border rounded"
-                                                        checked={selectedAnswer === option}
-                                                        onChange={() => setSelectedAnswer(option)}
+                                                        checked={answerIndex === i}
+                                                        onChange={() => setAnswerIndex(i)}
+                                                        disabled={answerSubmitted}
                                                     />
                                                 ))}
+                                                <Button variant="secondary" type="submit" disabled={answerSubmitted}>Submit</Button>
                                             </Form>
                                         </Card.Body>
                                     </Card>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { socket } from "../socket"
-import { Form, Button, Card } from 'react-bootstrap'
+import { Form, Button, Card, ListGroup, Badge, Container, Row, Col } from 'react-bootstrap'
 
 export const Quiz = () => {
   const [players, setPlayers] = useState([])
@@ -8,6 +8,7 @@ export const Quiz = () => {
   const gameId = "nye"
   const [question, setQuestion] = useState(null)
   const [selectedAnswer, setSelectedAnswer] = useState(null)
+  const [playersAnswered, setPlayersAnswered] = useState([])
 
   useEffect(() => {
     // Join room as host
@@ -31,7 +32,6 @@ export const Quiz = () => {
   const fetchQuestion = async () => {
     try {
       socket.on("quiz:question", (question) => {
-        console.log('question', question)
         setQuestion(question)
       })
     } catch (e) {
@@ -42,6 +42,18 @@ export const Quiz = () => {
   useEffect(() => {
     fetchQuestion()
   }, [gameStarted])
+
+  useEffect(() => {
+
+    // Listen for players joining
+    socket.on("player:answer", (player) => {
+      setPlayersAnswered(prev => [...prev, player])
+    })
+
+    return () => {
+      socket.off("player:answer")
+    }
+  }, [])
 
 
   return (
@@ -58,7 +70,36 @@ export const Quiz = () => {
       }}
     >
       <h1 style={{ fontSize: "3rem", marginBottom: "20px" }}>🎉 NYE Quiz 🎉</h1>
-      {!gameStarted && <h2 style={{ marginBottom: "20px" }}>Players Joined:</h2>}
+      {!gameStarted && (
+        <h2 className="mb-3 text-center">Players Joined</h2>
+      )}
+
+
+      <Container className="mt-4">
+        {!gameStarted && (
+          <h2 className="mb-3 text-center">Players Joined</h2>
+        )}
+
+        {playersAnswered.length > 0 && (
+          <div className="mt-3">
+            <h4 className="mb-2">Players Answered:</h4>
+            <Row className="g-2">
+              {playersAnswered.map((player, i) => (
+                <Col key={i} xs={6} sm={4} md={3} lg={2}>
+                  <div
+                    className="p-2 text-center border rounded"
+                    style={{ backgroundColor: "#f7f7f7" }}
+                  >
+                    {player.player}
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          </div>
+        )}
+      </Container>
+
+
 
       <div style={{ display: "flex", gap: "15px", flexWrap: "wrap", justifyContent: "center" }}>
         {players.length > 0 && !gameStarted && (
@@ -99,7 +140,7 @@ export const Quiz = () => {
 
                 <Form>
                   {question.options.map((option, i) => (
-                    <Form.Check
+                    <div
                       key={i}
                       type="radio"
                       name="question"
@@ -108,7 +149,9 @@ export const Quiz = () => {
                       className="mb-3 p-3 border rounded"
                       checked={selectedAnswer === option}
                       onChange={() => setSelectedAnswer(option)}
-                    />
+                    >
+                      {option}
+                    </div>
                   ))}
                 </Form>
               </Card.Body>

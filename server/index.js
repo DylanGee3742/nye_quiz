@@ -38,20 +38,18 @@ io.on("connection", (socket) => {
   // Host starts quiz
   socket.on("quiz:start", ({ gameId }) => {
     const game = games.get(gameId)
-    console.log(game)
     if (!game) return
     sendQuestion(gameId)
   })
 
-//   // Phone submits answer
-//   socket.on("player:answer", ({ gameId, answerIndex }) => {
-//     const game = games.get(gameId)
-//     if (!game) return
-//     game.answers[socket.id] = answerIndex
-
-//     const player = game.players.find(p => p.id === socket.id)
-//     io.to(gameId).emit("player:answer", { player: player.name })
-//   })
+  // Phone submits answer
+  socket.on("player:answer", ({ gameId, answerIndex }) => {
+    const game = games.get(gameId)
+    if (!game) return
+    const player = game.players.find(p => p.id === socket.id)
+    game.answers[player.name] = answerIndex
+    io.to(gameId).emit("player:answer", { player: player.name })
+  })
 
 //   // Move to next question
 //   socket.on("quiz:next", ({ gameId }) => {
