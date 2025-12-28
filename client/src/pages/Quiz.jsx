@@ -8,6 +8,7 @@ export const Quiz = () => {
   const gameId = "nye"
   const [question, setQuestion] = useState(null)
   const [playersAnswered, setPlayersAnswered] = useState([])
+  const [scores, setScores] = useState([])
 
   useEffect(() => {
     // Join room as host
@@ -64,14 +65,11 @@ export const Quiz = () => {
   }, [playersAnswered])
 
   const getScores = () => {
-    console.log('hit')
     try {
-      socket.emit("quiz:scores", {gameId})
-
+      socket.emit("quiz:scores", { gameId })
       socket.on("player:scores", (scores) => {
-        console.log(scores)
+        setScores()
       })
-    
     } catch (e) {
       console.error(e)
     }

@@ -47,7 +47,8 @@ io.on("connection", (socket) => {
     const game = games.get(gameId)
     if (!game) return
     const player = game.players.find(p => p.id === socket.id)
-    game.answers[player.name] = answerIndex
+    checkAnswer(answerIndex, game, player)
+    // game.answers[player.name] = answerIndex
     io.to(gameId).emit("player:answer", { player: player.name })
   })
 
@@ -63,10 +64,10 @@ io.on("connection", (socket) => {
     }
   })
 
-  socket.on("quiz:scores", ({gameId}) => {
+  socket.on("quiz:scores", ({ gameId }) => {
     const game = games.get(gameId)
     if (!game) return
-    io.to(gameId).emit("player:scores", {scores: game.answers})
+    io.to(gameId).emit("player:scores", { scores: game.answers })
   })
 
   socket.on("disconnect", () => {
@@ -84,6 +85,25 @@ function sendQuestion(gameId) {
     options: question.options,
     index: game.currentQuestion
   })
+}
+
+const checkAnswer = (userIndex, game, player) => {
+  try {
+    if (!game.answers[player.name]) {
+      game.answers[player.name] = 0
+    }
+    for (let question of questions) {
+      if (game.currentQuestion == question.id) {
+        if (question.correctIndex === userIndex) {
+          game.answers[player.name] += 1
+        } else {
+          return
+        }
+      }
+    }
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 httpServer.listen(3000, () => {
