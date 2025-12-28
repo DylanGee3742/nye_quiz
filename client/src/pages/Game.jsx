@@ -11,6 +11,8 @@ export const Game = () => {
     const [question, setQuestion] = useState(null)
     const [answerIndex, setAnswerIndex] = useState(null)
     const [answerSubmitted, setAnswerSubmitted] = useState(false)
+    const [mode, setMode] = useState('public')
+    const [privateMessage, setPrivateMessage] = useState('')
 
     const fetchQuestion = async () => {
         try {
@@ -56,6 +58,15 @@ export const Game = () => {
         }
     }
 
+    useEffect(() => {
+        socket.on("private:prompt", (data) => {
+            setPrivateMessage(data.message)
+            setMode("private")
+        })
+
+        return () => socket.off("private:prompt")
+    }, [])
+
     return (
         <>
             {!submitted ? (
@@ -73,7 +84,7 @@ export const Game = () => {
                     {question && (
                         <>
                             <div className="d-flex justify-content-center mt-5">
-                                {question && (
+                                {question && mode == 'public' && (
                                     <Card style={{ maxWidth: "600px", width: "100%" }} className="p-4 shadow">
                                         <Card.Body>
                                             <Card.Title className="mb-4 text-center">
@@ -102,6 +113,13 @@ export const Game = () => {
                             </div>
                         </>
                     )}
+                </div>
+            )}
+
+            {mode === "private" && (
+                <div>
+                    <h1>{privateMessage}</h1>
+                    <button onClick={() => setMode('public')}>Continue</button>
                 </div>
             )}
         </>

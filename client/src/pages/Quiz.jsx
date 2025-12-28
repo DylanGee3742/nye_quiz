@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { socket } from "../socket"
 import { Form, Button, Card, ListGroup, Badge, Container, Row, Col } from 'react-bootstrap'
+import { LeaderBoard } from "./Leaderboard"
 
 export const Quiz = () => {
   const [players, setPlayers] = useState([])
@@ -9,6 +10,7 @@ export const Quiz = () => {
   const [question, setQuestion] = useState(null)
   const [playersAnswered, setPlayersAnswered] = useState([])
   const [scores, setScores] = useState([])
+  const [showLeaderboard, setShowleaderboard] = useState(false)
 
   useEffect(() => {
     // Join room as host
@@ -68,13 +70,20 @@ export const Quiz = () => {
     try {
       socket.emit("quiz:scores", { gameId })
       socket.on("player:scores", (scores) => {
-        setScores()
+        setScores(scores)
       })
     } catch (e) {
       console.error(e)
     }
   }
 
+  const pickPerson = () => {
+    try {
+      socket.emit("quiz:random_task", {gameId})
+    } catch (e) {
+      console.log(e)
+    }
+  }
 
   return (
     <div
@@ -173,12 +182,15 @@ export const Quiz = () => {
               </Card.Body>
               <Card.Footer>
                 <Button onClick={getScores}>Get Scores</Button>
+                <Button onClick={pickPerson}>Pick Player</Button>
+                <Button onClick={() => setShowleaderboard(true)}>Show Leaderboard</Button>
               </Card.Footer>
             </Card>
           )}
         </div>
 
       }
+      {showLeaderboard && <LeaderBoard gameId={gameId} playerList={players} />}
     </div>
 
   )

@@ -70,6 +70,12 @@ io.on("connection", (socket) => {
     io.to(gameId).emit("player:scores", { scores: game.answers })
   })
 
+  socket.on("quiz:random_task", ({gameId}) => {
+    const game = games.get(gameId)
+    if (!game) return
+    pickRandomPlayer(gameId)
+  })
+
   socket.on("disconnect", () => {
     console.log("Disconnected:", socket.id)
     // Optionally remove player from any game
@@ -89,13 +95,13 @@ function sendQuestion(gameId) {
 
 const checkAnswer = (userIndex, game, player) => {
   try {
-    if (!game.answers[player.name]) {
-      game.answers[player.name] = 0
+    if (!game.answers[player.id]) {
+      game.answers[player.id] = 0
     }
     for (let question of questions) {
       if (game.currentQuestion == question.id) {
         if (question.correctIndex === userIndex) {
-          game.answers[player.name] += 1
+          game.answers[player.id] += 1
         } else {
           return
         }
@@ -104,6 +110,16 @@ const checkAnswer = (userIndex, game, player) => {
   } catch (e) {
     console.log(e)
   }
+}
+
+function pickRandomPlayer(gameId) {
+  const game = games.get(gameId)
+  const player =
+    game.players[Math.floor(Math.random() * game.players.length)]
+
+  io.to(player.id).emit("private:prompt", {
+    message: "You’ve been chosen 👀"
+  })
 }
 
 httpServer.listen(3000, () => {
