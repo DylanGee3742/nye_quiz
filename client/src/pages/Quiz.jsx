@@ -7,7 +7,6 @@ export const Quiz = () => {
   const [gameStarted, setGameStarted] = useState(false)
   const gameId = "nye"
   const [question, setQuestion] = useState(null)
-  const [selectedAnswer, setSelectedAnswer] = useState(null)
   const [playersAnswered, setPlayersAnswered] = useState([])
 
   useEffect(() => {
@@ -39,6 +38,7 @@ export const Quiz = () => {
     }
   }
 
+
   useEffect(() => {
     fetchQuestion()
   }, [gameStarted])
@@ -54,6 +54,28 @@ export const Quiz = () => {
       socket.off("player:answer")
     }
   }, [])
+
+  useEffect(() => {
+    if (players.length == playersAnswered.length && gameStarted) {
+      socket.emit("quiz:next", { gameId })
+      setPlayersAnswered([])
+      fetchQuestion()
+    }
+  }, [playersAnswered])
+
+  const getScores = () => {
+    console.log('hit')
+    try {
+      socket.emit("quiz:scores", {gameId})
+
+      socket.on("player:scores", (scores) => {
+        console.log(scores)
+      })
+    
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
 
   return (
@@ -142,19 +164,18 @@ export const Quiz = () => {
                   {question.options.map((option, i) => (
                     <div
                       key={i}
-                      type="radio"
-                      name="question"
                       id={`option-${i}`}
                       label={option}
                       className="mb-3 p-3 border rounded"
-                      checked={selectedAnswer === option}
-                      onChange={() => setSelectedAnswer(option)}
                     >
                       {option}
                     </div>
                   ))}
                 </Form>
               </Card.Body>
+              <Card.Footer>
+                <Button onClick={getScores}>Get Scores</Button>
+              </Card.Footer>
             </Card>
           )}
         </div>

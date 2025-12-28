@@ -16,6 +16,8 @@ export const Game = () => {
         try {
             socket.on("quiz:question", (question) => {
                 setQuestion(question)
+                setAnswerSubmitted(false)
+                setAnswerIndex(null)
             })
         } catch (e) {
             console.error(e)

@@ -51,17 +51,23 @@ io.on("connection", (socket) => {
     io.to(gameId).emit("player:answer", { player: player.name })
   })
 
-//   // Move to next question
-//   socket.on("quiz:next", ({ gameId }) => {
-//     const game = games.get(gameId)
-//     if (!game) return
-//     game.currentQuestion++
-//     if (game.currentQuestion < questions.length) {
-//       sendQuestion(gameId)
-//     } else {
-//       io.to(gameId).emit("quiz:finished")
-//     }
-//   })
+  // Move to next question
+  socket.on("quiz:next", ({ gameId }) => {
+    const game = games.get(gameId)
+    if (!game) return
+    game.currentQuestion++
+    if (game.currentQuestion < questions.length) {
+      sendQuestion(gameId)
+    } else {
+      io.to(gameId).emit("quiz:finished")
+    }
+  })
+
+  socket.on("quiz:scores", ({gameId}) => {
+    const game = games.get(gameId)
+    if (!game) return
+    io.to(gameId).emit("player:scores", {scores: game.answers})
+  })
 
   socket.on("disconnect", () => {
     console.log("Disconnected:", socket.id)
