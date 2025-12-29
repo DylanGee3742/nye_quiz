@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { socket } from "../socket"
 import { Form, Button, Card, Row, Col } from 'react-bootstrap'
 import { usePlayers } from "../states/PlayersContext"
@@ -10,11 +10,18 @@ export const Questions = ({ phone, gameId }) => {
     const [playersAnswered, setPlayersAnswered] = useState([])
     const [currentQuestionNumber, setCurrentQuestionNumber] = useState(0);
     const { players, setPlayers } = usePlayers()
+    const hasRequestedQuestion = useRef(false)
 
     useEffect(() => {
-        // Listen for players joining
+        // Listen for players answering
         socket.on("player:answer", (player) => {
-            setPlayersAnswered(prev => [...prev, player])
+            setPlayersAnswered(prev => {
+                // Prevent duplicates
+                if (prev.some(p => p.player === player.player)) {
+                    return prev;
+                }
+                return [...prev, player];
+            });
         })
 
         return () => {
@@ -33,17 +40,21 @@ export const Questions = ({ phone, gameId }) => {
     }
 
     useEffect(() => {
-        const handleQuestion = (question) => {
-            setQuestion(question);
+        const handleQuestion = (newQuestion) => {
+            console.log("Received question:", newQuestion.index);
+            setQuestion(newQuestion);
             setAnswerSubmitted(false);
             setAnswerIndex(null);
-            setCurrentQuestionNumber(prev => prev + 1); // track sequence
+            setCurrentQuestionNumber(newQuestion.index);
+            setPlayersAnswered([]);
+            hasRequestedQuestion.current = false; // Reset flag
         };
     
         socket.on("quiz:question", handleQuestion);
     
-        // Only phones request current question
-        if (phone && gameId) {
+        // Only phones request current question on mount
+        if (phone && gameId && !hasRequestedQuestion.current) {
+            hasRequestedQuestion.current = true;
             socket.emit("quiz:get-current-question", { gameId });
         }
     
@@ -51,24 +62,26 @@ export const Questions = ({ phone, gameId }) => {
     }, [phone, gameId]);
 
     useEffect(() => {
+        // Only host should trigger next question
+        if (phone) return;
+        
         // Only trigger when all players answered and question exists
         if (
-            question && // make sure we have a question
+            question && 
             players.length > 0 &&
+            playersAnswered.length > 0 &&
             playersAnswered.length === players.length
         ) {
-            setPlayersAnswered([]);
+            console.log("All players answered, advancing to next question");
             socket.emit("quiz:next", { gameId });
-            // no need to emit get-current-question here, server will broadcast it
         }
-    }, [playersAnswered, players, question, gameId]);
-    
+    }, [playersAnswered, players, question, gameId, phone]);
 
     return (
         <>
             {playersAnswered.length > 0 && !phone && (
                 <div className="mt-3">
-                    <h4 className="mb-2">Players Answered:</h4>
+                    <h4 className="mb-2">Players Answered: {playersAnswered.length}/{players.length}</h4>
                     <Row className="g-2">
                         {playersAnswered.map((player, i) => (
                             <Col key={i} xs={6} sm={4} md={3} lg={2}>

@@ -96,9 +96,14 @@ io.on("connection", (socket) => {
     const game = games.get(gameId)
     if (!game) return
     if (game.currentQuestion < questions.length) {
-      sendQuestion(gameId)
+      // Send only to the requesting socket, not the entire room
+      socket.emit("quiz:question", {
+        question: questions[game.currentQuestion].question,
+        options: questions[game.currentQuestion].options,
+        index: game.currentQuestion
+      })
     } else {
-      io.to(gameId).emit("quiz:finished")
+      socket.emit("quiz:finished")
     }
   })
 
