@@ -1,47 +1,20 @@
-import { useEffect, useState } from "react"
-import { socket } from "../socket"
-import { LeaderBoard } from "./Leaderboard"
-import { Questions } from "./Questions"
+// Game.js
+import { QuestionsPhone } from "./phones/QuestionsPhone"
+import { LeaderboardPhone } from "./phones/LeaderboardPhone"
+import { useState } from "react"
 import { usePhase } from "../states/PhaseContext"
-import { JoinGame } from "./JoinGame"
+import { JoinGame } from "./phones/JoinGame"
 
 export const Game = () => {
-    const [gameId, setGameId] = useState("nye")
-    const { phase, setPhase } = usePhase()
-
-    useEffect(() => {
-        socket.on("quiz:start", (payload) => {
-            setPhase("questions")
-            setGameId(payload?.gameId ?? payload)
-        })
-
-        socket.on("quiz:finished", () => {
-            setPhase("leaderboard")
-        })
-
-        return () => {
-            socket.off("quiz:start")
-            socket.off("quiz:finished")
-        }
-    }, [])
-
-
-    let content;
+    const [gameId] = useState("nye")
+    const { phase } = usePhase()
 
     switch (phase) {
         case 'questions':
-            content = <Questions gameId={gameId} phone={true} />;
-            break;
+            return <QuestionsPhone gameId={gameId} />
         case 'leaderboard':
-            content = <LeaderBoard gameId={gameId} />;
-            break;
+            return <LeaderboardPhone gameId={gameId} />
         default:
-            content = <JoinGame gameId={gameId} />; // or some default component
+            return <JoinGame gameId={gameId} />
     }
-
-    return (
-        <div>
-            {content}
-        </div>
-    )
 }

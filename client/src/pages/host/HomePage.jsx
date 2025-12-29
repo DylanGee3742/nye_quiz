@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Container, Button, Card, Row, Col } from "react-bootstrap";
-import { socket } from "../socket";
-import { usePhase } from "../states/PhaseContext";
-import { usePlayers } from "../states/PlayersContext";
+import { socket } from "../../socket";
+import { usePhase } from "../../states/PhaseContext";
+import { usePlayers } from "../../states/PlayersContext";
 
 export const HomePage = ({ gameId }) => {
     const { phase, setPhase } = usePhase()

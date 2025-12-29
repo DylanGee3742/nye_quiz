@@ -1,8 +1,9 @@
+// LeaderboardPhone.js
 import { useEffect, useState } from "react"
-import { Container, Card, ListGroup, Badge, Button } from "react-bootstrap";
-import { socket } from "../socket"
+import { Container, Card, ListGroup, Badge } from "react-bootstrap"
+import { socket } from "../../socket"
 
-export const LeaderBoard = ({ gameId, previousRound, setPhase }) => {
+export const LeaderboardPhone = ({ gameId }) => {
   const [leaderboard, setLeaderboard] = useState([])
 
   useEffect(() => {
@@ -11,24 +12,12 @@ export const LeaderBoard = ({ gameId, previousRound, setPhase }) => {
     }
 
     socket.on("leaderboard:players", handleLeaderboard)
-
     socket.emit("quiz:show_leaderboard", { gameId })
 
     return () => {
       socket.off("leaderboard:players", handleLeaderboard)
     }
   }, [gameId])
-
-
-  const startNextRound = () => {
-    if (previousRound == 'questions') {
-      setPhase('polling')
-    } else if (previousRound == 'polling') {
-      setPhase('music_game')
-    } else {
-      setPhase('finished')
-    }
-  }
 
   return (
     <Container className="d-flex justify-content-center mt-5">
@@ -38,12 +27,12 @@ export const LeaderBoard = ({ gameId, previousRound, setPhase }) => {
 
           <ListGroup variant="flush">
             {leaderboard.map((player, index) => {
-              const medals = ["🥇", "🥈", "🥉"];
-              const rank = medals[index] || index + 1;
+              const medals = ["🥇", "🥈", "🥉"]
+              const rank = medals[index] || `${index + 1}.`
 
               return (
                 <ListGroup.Item
-                  key={player.id}
+                  key={index}
                   className="d-flex justify-content-between align-items-center py-3"
                 >
                   <div className="d-flex align-items-center gap-2">
@@ -55,15 +44,15 @@ export const LeaderBoard = ({ gameId, previousRound, setPhase }) => {
                     {player.score}
                   </Badge>
                 </ListGroup.Item>
-              );
+              )
             })}
           </ListGroup>
         </Card.Body>
-        <Card.Footer>
-          <Button onClick={startNextRound}>Start Next Round</Button>
+        
+        <Card.Footer className="text-center text-muted">
+          Waiting for host to continue...
         </Card.Footer>
       </Card>
     </Container>
-  );
-
+  )
 }

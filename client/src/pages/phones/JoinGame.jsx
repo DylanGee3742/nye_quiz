@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react"
 import { Form, Button, Container, Spinner } from "react-bootstrap"
-import { socket } from "../socket"
-import { usePlayers } from "../states/PlayersContext"
+import { socket } from "../../socket"
+import { usePlayers } from "../../states/PlayersContext"
 
 export const JoinGame = ({ gameId }) => {
     const [name, setName] = useState("")
     const [submitted, setSubmitted] = useState(false)
     const { players, setPlayers } = usePlayers()
-
 
     useEffect(() => {
         socket.emit("host:join", { gameId });
@@ -18,7 +17,6 @@ export const JoinGame = ({ gameId }) => {
 
         return () => {
             socket.off("player:joined");
-            socket.off("quiz:finished");
         };
     }, [gameId]);
 
