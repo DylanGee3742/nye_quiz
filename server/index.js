@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
     io.to(gameId).emit("player:scores", { scores: game.answers })
   })
 
-  socket.on("quiz:random_task", ({gameId}) => {
+  socket.on("quiz:random_task", ({ gameId }) => {
     const game = games.get(gameId)
     if (!game) return
     pickRandomPlayer(gameId)
@@ -89,6 +89,17 @@ io.on("connection", (socket) => {
       }
     }
     io.to(gameId).emit("leaderboard:players", leaderboard)
+  })
+
+
+  socket.on("quiz:get-current-question", ({ gameId }) => {
+    const game = games.get(gameId)
+    if (!game) return
+    if (game.currentQuestion < questions.length) {
+      sendQuestion(gameId)
+    } else {
+      io.to(gameId).emit("quiz:finished")
+    }
   })
 
   socket.on("disconnect", () => {
