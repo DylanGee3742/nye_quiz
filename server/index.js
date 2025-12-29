@@ -103,7 +103,7 @@ io.on("connection", (socket) => {
         index: game.currentQuestion
       })
     } else {
-      socket.emit("quiz:finished")
+      io.to(gameId).emit("quiz:finished")
     }
   })
 

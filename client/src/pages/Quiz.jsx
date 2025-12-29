@@ -1,45 +1,25 @@
-import { useEffect, useState } from "react"
-import { socket } from "../socket"
-import { LeaderBoard } from "./Leaderboard"
-import { Questions } from "./Questions"
-import { HomePage } from "./HomePage"
+// Quiz.js
+import { useEffect } from "react"
+import { LeaderboardHost } from "./host/LeaderboardHost"
+import { QuestionsHost } from "./host/QuestionsHost"
 import { usePhase } from "../states/PhaseContext"
+import { HomePage } from "./host/HomePage"
+import { socket } from "../socket"
 
 export const Quiz = () => {
   const gameId = "nye"
-  const { phase, setPhase } = usePhase()
+  const { phase } = usePhase()
 
   useEffect(() => {
-    // Join room as host
     socket.emit("host:join", { gameId })
-
-    socket.on("quiz:finished", () => {
-      setPhase('leaderboard')
-    }) 
-
-    return () => {
-      socket.off("player:joined")
-    }
   }, [])
-
-
-  let content;
 
   switch (phase) {
     case 'questions':
-      content = <Questions gameId={gameId} phone={false} />;
-      break;
+      return <QuestionsHost gameId={gameId} />
     case 'leaderboard':
-      content = <LeaderBoard gameId={gameId} />;
-      break;
+      return <LeaderboardHost gameId={gameId} />
     default:
-      content = <HomePage gameId={gameId} setPhase={setPhase} />;
+      return <HomePage gameId={gameId} />
   }
-
-
-  return (
-    <div>
-      {content}
-    </div>
-  )
 }

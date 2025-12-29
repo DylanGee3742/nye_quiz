@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Form, Button, Container, Spinner } from "react-bootstrap"
-import { socket } from "../socket"
-import { usePlayers } from "../states/PlayersContext"
+import { socket } from "../../socket"
+import { usePlayers } from "../../states/PlayersContext"
 
 export const JoinGame = ({ gameId }) => {
     const [name, setName] = useState("")
@@ -18,7 +18,6 @@ export const JoinGame = ({ gameId }) => {
 
         return () => {
             socket.off("player:joined");
-            socket.off("quiz:finished");
         };
     }, [gameId]);
 
