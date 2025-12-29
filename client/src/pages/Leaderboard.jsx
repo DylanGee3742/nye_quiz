@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
-import { Container, Card, ListGroup, Badge } from "react-bootstrap";
+import { Container, Card, ListGroup, Badge, Button } from "react-bootstrap";
 import { socket } from "../socket"
 
-export const LeaderBoard = ({ gameId }) => {
+export const LeaderBoard = ({ gameId, previousRound, setPhase }) => {
   const [leaderboard, setLeaderboard] = useState([])
 
   useEffect(() => {
@@ -20,6 +20,15 @@ export const LeaderBoard = ({ gameId }) => {
   }, [gameId])
 
 
+  const startNextRound = () => {
+    if (previousRound == 'questions') {
+      setPhase('polling')
+    } else if (previousRound == 'polling') {
+      setPhase('music_game')
+    } else {
+      setPhase('finished')
+    }
+  }
 
   return (
     <Container className="d-flex justify-content-center mt-5">
@@ -50,6 +59,9 @@ export const LeaderBoard = ({ gameId }) => {
             })}
           </ListGroup>
         </Card.Body>
+        <Card.Footer>
+          <Button onClick={startNextRound}>Start Next Round</Button>
+        </Card.Footer>
       </Card>
     </Container>
   );

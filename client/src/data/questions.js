@@ -18,5 +18,11 @@ export const questions = [
       options: ["Oppenheimer", "Everything Everywhere All At Once", "Top Gun: Maverick", "Avatar 2"],
       correctIndex: 1
     },
+    {
+      id: 3,
+      question: "Ur mum?",
+      options: ["Oppenheimer", "Everything Everywhere All At Once", "Top Gun: Maverick", "Avatar 2"],
+      correctIndex: 1
+    },
     // … more questions
   ]
