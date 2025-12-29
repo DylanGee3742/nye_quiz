@@ -19,21 +19,28 @@ export default function App() {
 
     const handleQuizStart = () => {
       console.log("Quiz starting")
-      setPhase("questions")
+      setPhase("polling-submit")
     }
 
     const handleQuizFinished = () => {
       console.log("Quiz finished")
-      setPhase("leaderboard")
+      //quiz:finished
+      setPhase("polling-submit")
     }
 
     const handleHostLeaderboard = () => {
-      setPhase("leaderboard")
+      //quiz:finished
+      setPhase("polling-submit")
+    }
+
+    const handleVotingStarting = () => {
+      setPhase("polling-vote")
     }
 
     socket.on("quiz:start", handleQuizStart)
     socket.on("quiz:finished", handleQuizFinished)
     socket.on("show_leaderboard", handleHostLeaderboard)
+    socket.on("polling:current-prompt", handleVotingStarting)
 
     return () => {
       socket.off("quiz:start", handleQuizStart)
