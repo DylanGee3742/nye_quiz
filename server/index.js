@@ -39,8 +39,10 @@ io.on("connection", (socket) => {
   socket.on("quiz:start", ({ gameId }) => {
     const game = games.get(gameId)
     if (!game) return
+    io.to(gameId).emit("quiz:start", { gameId })
     sendQuestion(gameId)
   })
+
 
   // Phone submits answer
   socket.on("player:answer", ({ gameId, answerIndex }) => {
@@ -48,7 +50,6 @@ io.on("connection", (socket) => {
     if (!game) return
     const player = game.players.find(p => p.id === socket.id)
     checkAnswer(answerIndex, game, player)
-    // game.answers[player.name] = answerIndex
     io.to(gameId).emit("player:answer", { player: player.name })
   })
 
@@ -74,6 +75,20 @@ io.on("connection", (socket) => {
     const game = games.get(gameId)
     if (!game) return
     pickRandomPlayer(gameId)
+  })
+
+  socket.on("quiz:show_leaderboard", ({ gameId }) => {
+    const game = games.get(gameId)
+    const leaderboard = []
+    for (const player of game.players) {
+      if (game.answers[player.id]) {
+        leaderboard.push({
+          player: player.name,
+          score: game.answers[player.id]
+        })
+      }
+    }
+    io.to(gameId).emit("leaderboard:players", leaderboard)
   })
 
   socket.on("disconnect", () => {

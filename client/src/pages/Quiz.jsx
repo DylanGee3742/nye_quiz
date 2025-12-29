@@ -9,8 +9,8 @@ export const Quiz = () => {
   const gameId = "nye"
   const [question, setQuestion] = useState(null)
   const [playersAnswered, setPlayersAnswered] = useState([])
-  const [scores, setScores] = useState([])
   const [showLeaderboard, setShowleaderboard] = useState(false)
+  const [phase, setPhase] = useState('not_started')
 
   useEffect(() => {
     // Join room as host
@@ -21,6 +21,10 @@ export const Quiz = () => {
       setPlayers(playerList)
     })
 
+    socket.on("quiz:finished", () => {
+      setPhase('leaderboard')
+    })
+
     return () => {
       socket.off("player:joined")
     }
@@ -28,6 +32,7 @@ export const Quiz = () => {
 
   const startQuiz = () => {
     setGameStarted(true)
+    setPhase('questions')
     socket.emit("quiz:start", { gameId })
   }
 
@@ -35,6 +40,7 @@ export const Quiz = () => {
     try {
       socket.on("quiz:question", (question) => {
         setQuestion(question)
+        console.log(question)
       })
     } catch (e) {
       console.error(e)
@@ -66,24 +72,15 @@ export const Quiz = () => {
     }
   }, [playersAnswered])
 
-  const getScores = () => {
-    try {
-      socket.emit("quiz:scores", { gameId })
-      socket.on("player:scores", (scores) => {
-        setScores(scores)
-      })
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
   const pickPerson = () => {
     try {
-      socket.emit("quiz:random_task", {gameId})
+      socket.emit("quiz:random_task", { gameId })
     } catch (e) {
       console.log(e)
     }
   }
+
+
 
   return (
     <div
@@ -160,7 +157,7 @@ export const Quiz = () => {
         </Button>
       ) :
         <div className="d-flex justify-content-center mt-5">
-          {question && (
+          {question && phase == 'questions' && (
             <Card style={{ maxWidth: "600px", width: "100%" }} className="p-4 shadow">
               <Card.Body>
                 <Card.Title className="mb-4 text-center">
@@ -181,7 +178,6 @@ export const Quiz = () => {
                 </Form>
               </Card.Body>
               <Card.Footer>
-                <Button onClick={getScores}>Get Scores</Button>
                 <Button onClick={pickPerson}>Pick Player</Button>
                 <Button onClick={() => setShowleaderboard(true)}>Show Leaderboard</Button>
               </Card.Footer>
@@ -190,7 +186,7 @@ export const Quiz = () => {
         </div>
 
       }
-      {showLeaderboard && <LeaderBoard gameId={gameId} playerList={players} />}
+      {phase == 'leaderboard' && <LeaderBoard gameId={gameId} />}
     </div>
 
   )

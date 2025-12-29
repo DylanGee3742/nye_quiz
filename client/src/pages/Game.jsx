@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { socket } from "../socket"
 import { Form, Button, Card } from 'react-bootstrap'
+import { LeaderBoard } from "./Leaderboard"
 
 
 export const Game = () => {
@@ -13,6 +14,7 @@ export const Game = () => {
     const [answerSubmitted, setAnswerSubmitted] = useState(false)
     const [mode, setMode] = useState('public')
     const [privateMessage, setPrivateMessage] = useState('')
+    const [phase, setPhase] = useState('not_started')
 
     const fetchQuestion = async () => {
         try {
@@ -27,11 +29,22 @@ export const Game = () => {
     }
 
     useEffect(() => {
-        socket.on("quiz:start", (gameId) => {
+        socket.on("quiz:start", (payload) => {
             setGameStarted(true)
-            setGameId(gameId)
+            setPhase("questions")
+            setGameId(payload?.gameId ?? payload)
         })
-    })
+
+        socket.on("quiz:finished", () => {
+            setPhase("leaderboard")
+        })
+
+        return () => {
+            socket.off("quiz:start")
+            socket.off("quiz:finished")
+        }
+    }, [])
+
 
     useEffect(() => {
         fetchQuestion()
@@ -81,7 +94,7 @@ export const Game = () => {
                 </form>
             ) : (
                 <div>
-                    {question && (
+                    {question && phase == 'questions' && (
                         <>
                             <div className="d-flex justify-content-center mt-5">
                                 {question && mode == 'public' && (
@@ -122,6 +135,8 @@ export const Game = () => {
                     <button onClick={() => setMode('public')}>Continue</button>
                 </div>
             )}
+
+            {phase == 'leaderboard' && <LeaderBoard gameId={gameId} />}
         </>
     );
 
