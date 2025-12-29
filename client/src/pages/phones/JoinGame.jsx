@@ -8,7 +8,6 @@ export const JoinGame = ({ gameId }) => {
     const [submitted, setSubmitted] = useState(false)
     const { players, setPlayers } = usePlayers()
 
-
     useEffect(() => {
         socket.emit("host:join", { gameId });
 

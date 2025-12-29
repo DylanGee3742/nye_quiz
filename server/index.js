@@ -43,6 +43,7 @@ io.on("connection", (socket) => {
       sendQuestion(gameId)
     } else {
       console.log(`Quiz finished for game: ${gameId}`)
+      io.to(gameId).emit("show_leaderboard")
       io.to(gameId).emit("quiz:finished")
     }
   })
